@@ -5,7 +5,7 @@ import "github.com/rivo/tview"
 type MainFrame struct {
 	tview.Flex
 	filePanel   *FileView
-	resultPanel *tview.Table
+	resultPanel *ResultView
 	status      *tview.TextView
 }
 
@@ -22,8 +22,7 @@ func NewMainFrame() *MainFrame {
 func (m *MainFrame) makeUIComponents() {
 	m.filePanel = NewFileView("")
 
-	m.resultPanel = tview.NewTable()
-	m.resultPanel.SetBorder(true)
+	m.resultPanel = NewResultView()
 
 	m.status = tview.NewTextView().SetText("Ready")
 }
@@ -40,4 +39,5 @@ func (m *MainFrame) DefaultLayout() {
 func (m *MainFrame) loadTestData() {
 
 	m.resultPanel.SetTitle("Result")
+	m.resultPanel.loadTestData()
 }
