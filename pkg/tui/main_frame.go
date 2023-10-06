@@ -39,5 +39,4 @@ func (m *MainFrame) DefaultLayout() {
 func (m *MainFrame) loadTestData() {
 
 	m.resultPanel.SetTitle("Result")
-	m.resultPanel.loadTestData()
 }
