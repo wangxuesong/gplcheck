@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"strconv"
+	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -15,9 +16,9 @@ var (
 	headers = []string{"#", "time", "level", "message", "line"}
 	data    = [][]string{
 		{"1696160426.41959", "warn", "unsupported: update set multiple columns with select", "6771"},
-		{"1696160426.41959", "warn", "unsupported: update set multiple columns with select", "6771"},
-		{"1696160426.41959", "warn", "unsupported: update set multiple columns with select", "6771"},
-		{"1696160426.41959", "warn", "unsupported: update set multiple columns with select", "6771"},
+		{"1696160426.4196968", "warn", "unsupported: update set multiple columns with select", "6771"},
+		{"1696160426.41972", "warn", "unsupported: update set multiple columns with select", "6771"},
+		{"1696160426.419729", "warn", "unsupported: update set multiple columns with select", "6771"},
 		{"1696160426.41959", "warn", "unsupported: update set multiple columns with select", "6771"},
 	}
 )
@@ -63,10 +64,21 @@ func (c *ResultViewController) loadTestData(row int, column int) (tc *tview.Tabl
 			SetBackgroundColor(tcell.ColorBlack).
 			SetSelectable(true)
 	} else {
-		tc = tview.NewTableCell(data[row-1][column-1]).
-			SetAlign(tview.AlignCenter).
-			SetTextColor(tcell.ColorWhite).
-			SetSelectable(true)
+		tc = c.getData(row, column)
 	}
+	return tc
+}
+
+func (c *ResultViewController) getData(row int, column int) *tview.TableCell {
+	value := data[row-1][column-1]
+	if column == 1 {
+		timestamp, _ := strconv.ParseFloat(value, 64)
+		d := int64(timestamp * 1e6)
+		value = time.UnixMicro(d).Format("2006-01-02 15:04:05.000000")
+	}
+	tc := tview.NewTableCell(value).
+		SetAlign(tview.AlignCenter).
+		SetTextColor(tcell.ColorWhite).
+		SetSelectable(true)
 	return tc
 }
