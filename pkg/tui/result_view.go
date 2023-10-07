@@ -12,13 +12,13 @@ type ResultView struct {
 	controller *controllers.ResultViewController
 }
 
-func NewResultView() *ResultView {
+func NewResultView(c *controllers.ResultViewController) *ResultView {
 	v := &ResultView{
 		Table: *tview.NewTable().
 			SetSelectable(true, false).
 			SetFixed(1, 1).
 			SetSeparator(tview.Borders.Vertical),
-		controller: controllers.NewResultViewController(),
+		controller: c,
 	}
 	v.SetBorder(true)
 	v.SetBackgroundColor(tcell.ColorBlack)

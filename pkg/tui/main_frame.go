@@ -9,9 +9,11 @@ type MainFrame struct {
 	status      *tview.TextView
 }
 
-func NewMainFrame() *MainFrame {
+func NewMainFrame(file *FileView, result *ResultView) *MainFrame {
 	m := &MainFrame{
-		Flex: *tview.NewFlex(),
+		Flex:        *tview.NewFlex(),
+		filePanel:   file,
+		resultPanel: result,
 	}
 	m.makeUIComponents()
 	m.DefaultLayout()
@@ -20,10 +22,6 @@ func NewMainFrame() *MainFrame {
 }
 
 func (m *MainFrame) makeUIComponents() {
-	m.filePanel = NewFileView("")
-
-	m.resultPanel = NewResultView()
-
 	m.status = tview.NewTextView().SetText("Ready")
 }
 

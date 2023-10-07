@@ -1,8 +1,42 @@
 package main
 
-import "gplcheck/pkg/app"
+import (
+	"context"
+
+	"go.uber.org/fx"
+
+	"gplcheck/pkg/app"
+	"gplcheck/pkg/controllers"
+	"gplcheck/pkg/tui"
+)
 
 func main() {
-	app := app.NewApp()
-	app.Run()
+	// app := app.NewApp()
+	// app.Run()
+	di := fx.New(
+		fx.Provide(app.NewApp,
+			tui.NewTui,
+			tui.NewMainFrame,
+			tui.NewFileView,
+			func() string { return "." },
+			tui.NewResultView,
+			controllers.NewResultViewController,
+		),
+		fx.Invoke(Run),
+	)
+	di.Start(context.Background())
+
+	di.Stop(context.Background())
+}
+
+func Run(lifecycle fx.Lifecycle, app *app.App) {
+	lifecycle.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			app.Run()
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			return nil
+		},
+	})
 }

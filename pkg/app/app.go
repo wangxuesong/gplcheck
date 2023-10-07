@@ -6,9 +6,8 @@ type App struct {
 	Tui *tui.Tui
 }
 
-func NewApp() *App {
+func NewApp(t *tui.Tui) *App {
 	a := &App{}
-	t := tui.NewTui()
 	a.Tui = t
 	return a
 }

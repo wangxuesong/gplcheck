@@ -11,9 +11,10 @@ type (
 	}
 )
 
-func NewTui() *Tui {
+func NewTui(main *MainFrame) *Tui {
 	return &Tui{
-		App: tview.NewApplication().EnableMouse(true),
+		App:  tview.NewApplication().EnableMouse(true),
+		Main: main,
 	}
 }
 
@@ -26,7 +27,6 @@ func (t *Tui) Run() {
 }
 
 func (t *Tui) prepareViews() error {
-	t.Main = NewMainFrame()
 	t.App.SetRoot(t.Main, true)
 	return nil
 }
