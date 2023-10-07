@@ -2,19 +2,25 @@ package tui
 
 import (
 	"github.com/rivo/tview"
+
+	"gplcheck/pkg/common"
 )
 
 type (
 	Tui struct {
 		App  *tview.Application
 		Main *MainFrame
+
+		notifier *common.Notifier
 	}
 )
 
-func NewTui(main *MainFrame) *Tui {
+func NewTui(main *MainFrame, notifier *common.Notifier) *Tui {
 	return &Tui{
 		App:  tview.NewApplication().EnableMouse(true),
 		Main: main,
+
+		notifier: notifier,
 	}
 }
 

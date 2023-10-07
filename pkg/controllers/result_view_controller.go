@@ -6,10 +6,13 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	"gplcheck/pkg/common"
 )
 
 type ResultViewController struct {
 	tview.TableContentReadOnly
+	notifier *common.Notifier
 }
 
 var (
@@ -23,8 +26,10 @@ var (
 	}
 )
 
-func NewResultViewController() *ResultViewController {
-	return &ResultViewController{}
+func NewResultViewController(notifier *common.Notifier) *ResultViewController {
+	return &ResultViewController{
+		notifier: notifier,
+	}
 }
 
 func (c *ResultViewController) GetCell(row, column int) *tview.TableCell {

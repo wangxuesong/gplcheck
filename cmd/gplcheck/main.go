@@ -6,6 +6,7 @@ import (
 	"go.uber.org/fx"
 
 	"gplcheck/pkg/app"
+	"gplcheck/pkg/common"
 	"gplcheck/pkg/controllers"
 	"gplcheck/pkg/tui"
 )
@@ -21,6 +22,7 @@ func main() {
 			func() string { return "." },
 			tui.NewResultView,
 			controllers.NewResultViewController,
+			common.NewNotifier,
 		),
 		fx.Invoke(Run),
 	)
