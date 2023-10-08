@@ -1,8 +1,8 @@
 package controllers
 
 import (
+	"fmt"
 	"strconv"
-	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -13,6 +13,8 @@ import (
 type ResultViewController struct {
 	tview.TableContentReadOnly
 	notifier *common.Notifier
+
+	data []common.LogEntry
 }
 
 var (
@@ -27,9 +29,13 @@ var (
 )
 
 func NewResultViewController(notifier *common.Notifier) *ResultViewController {
-	return &ResultViewController{
+	c := &ResultViewController{
 		notifier: notifier,
+
+		data: []common.LogEntry{},
 	}
+	c.run()
+	return c
 }
 
 func (c *ResultViewController) GetCell(row, column int) *tview.TableCell {
@@ -45,7 +51,7 @@ func (c *ResultViewController) GetCell(row, column int) *tview.TableCell {
 }
 
 func (c *ResultViewController) GetRowCount() int {
-	return len(data) + 1
+	return len(c.data) + 1
 }
 
 func (c *ResultViewController) GetColumnCount() int {
@@ -75,15 +81,37 @@ func (c *ResultViewController) loadTestData(row int, column int) (tc *tview.Tabl
 }
 
 func (c *ResultViewController) getData(row int, column int) *tview.TableCell {
-	value := data[row-1][column-1]
-	if column == 1 {
-		timestamp, _ := strconv.ParseFloat(value, 64)
-		d := int64(timestamp * 1e6)
-		value = time.UnixMicro(d).Format("2006-01-02 15:04:05.000000")
+	// value := c.data[row-1][column-1]
+	var value string
+	switch column {
+	case 1:
+		value = c.data[row-1].Time.Format("2006-01-02 15:04:05.000000")
+	case 2:
+		value = c.data[row-1].Phase
+	case 3:
+		value = c.data[row-1].Message
+	case 4:
+		value = fmt.Sprintf("%d", c.data[row-1].Line)
+	default:
+		value = fmt.Sprintf("$_error on column %d", column)
 	}
 	tc := tview.NewTableCell(value).
 		SetAlign(tview.AlignCenter).
 		SetTextColor(tcell.ColorWhite).
 		SetSelectable(true)
 	return tc
+}
+
+func (c *ResultViewController) run() {
+	go func() {
+		for {
+			select {
+			case <-c.notifier.CloseChan():
+				return
+			case log := <-c.notifier.LogChan():
+				c.data = append(c.data, log)
+				c.notifier.RefreshChan() <- true
+			}
+		}
+	}()
 }
