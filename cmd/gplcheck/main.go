@@ -21,6 +21,7 @@ func main() {
 			tui.NewFileView,
 			func() string { return "." },
 			tui.NewResultView,
+			controllers.NewFileViewController,
 			controllers.NewResultViewController,
 			common.NewNotifier,
 		),
