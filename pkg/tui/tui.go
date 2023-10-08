@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 
 	"github.com/rivo/tview"
 
@@ -38,36 +37,6 @@ func (t *Tui) Run() {
 
 	defer close(t.notifier.CloseChan())
 
-	// generate test log data
-	go func() {
-		// delay 1 second
-		time.Sleep(1 * time.Second)
-		f, err := os.Open("./test.sql")
-		if err != nil {
-			return
-		}
-		defer f.Close()
-
-		// gr, err := gzip.NewReader(f)
-		// if err != nil {
-		// 	return
-		// }
-		// defer gr.Close()
-
-		// read file to string
-		text, err := io.ReadAll(f)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-		// parse file
-		// script, err := semantic.NewNodeDecoder[*semantic.Script]().Decode(text)
-		w := worker.NewParseWorker(t.notifier)
-		script, err := w.Run(string(text))
-		cw := worker.NewCheckWorker(t.notifier)
-		cw.Run(script)
-	}()
-
 	go func() {
 		for {
 			select {
@@ -75,6 +44,30 @@ func (t *Tui) Run() {
 				return
 			case <-t.notifier.RefreshChan():
 				t.App.Draw()
+			case cmd := <-t.notifier.CommandChan():
+				switch c := cmd.(type) {
+				case *common.ParseCommand:
+					go func() {
+						// open file
+						f, err := os.Open(c.FilePath)
+						if err != nil {
+							return
+						}
+						defer f.Close()
+
+						// read file to string
+						text, err := io.ReadAll(f)
+						if err != nil {
+							fmt.Println(err)
+							return
+						}
+						// parse file
+						w := worker.NewParseWorker(t.notifier)
+						script, err := w.Run(string(text))
+						cw := worker.NewCheckWorker(t.notifier)
+						cw.Run(script)
+					}()
+				}
 			}
 		}
 	}()

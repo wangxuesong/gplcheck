@@ -7,14 +7,17 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
+
+	"gplcheck/pkg/common"
 )
 
 type FileView struct {
 	tview.TreeView
-	root string
+	root     string
+	notifier *common.Notifier
 }
 
-func NewFileView(dirOrFile string) *FileView {
+func NewFileView(notifier *common.Notifier, dirOrFile string) *FileView {
 	if dirOrFile == "" {
 		dirOrFile = path.Dir(".")
 	}
@@ -28,6 +31,7 @@ func NewFileView(dirOrFile string) *FileView {
 
 	v := &FileView{
 		TreeView: *tview.NewTreeView().SetRoot(root).SetCurrentNode(root),
+		notifier: notifier,
 	}
 	v.SetBorder(true)
 	v.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -44,6 +48,13 @@ func NewFileView(dirOrFile string) *FileView {
 				node.Collapse()
 			}
 			return nil
+		case tcell.KeyEnter:
+			if !dir {
+				name := node.GetReference().(string)
+				cmd := &common.ParseCommand{FilePath: name}
+				v.notifier.CommandChan() <- cmd
+				return nil
+			}
 		}
 		return event
 	})
