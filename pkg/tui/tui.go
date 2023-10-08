@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"compress/gzip"
 	"fmt"
 	"io"
 	"os"
@@ -11,7 +10,6 @@ import (
 
 	"gplcheck/pkg/common"
 	"gplcheck/pkg/worker"
-	"procinspect/pkg/semantic"
 )
 
 type (
@@ -44,28 +42,30 @@ func (t *Tui) Run() {
 	go func() {
 		// delay 1 second
 		time.Sleep(1 * time.Second)
-		f, err := os.Open("./test.ast")
+		f, err := os.Open("./test.sql")
 		if err != nil {
 			return
 		}
 		defer f.Close()
 
-		gr, err := gzip.NewReader(f)
-		if err != nil {
-			return
-		}
-		defer gr.Close()
+		// gr, err := gzip.NewReader(f)
+		// if err != nil {
+		// 	return
+		// }
+		// defer gr.Close()
 
 		// read file to string
-		text, err := io.ReadAll(gr)
+		text, err := io.ReadAll(f)
 		if err != nil {
 			fmt.Println(err)
 			return
 		}
 		// parse file
-		script, err := semantic.NewNodeDecoder[*semantic.Script]().Decode(text)
-		w := worker.NewCheckWorker(t.notifier)
-		w.Run(script)
+		// script, err := semantic.NewNodeDecoder[*semantic.Script]().Decode(text)
+		w := worker.NewParseWorker(t.notifier)
+		script, err := w.Run(string(text))
+		cw := worker.NewCheckWorker(t.notifier)
+		cw.Run(script)
 	}()
 
 	go func() {
