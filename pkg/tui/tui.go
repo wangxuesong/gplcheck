@@ -1,11 +1,17 @@
 package tui
 
 import (
+	"compress/gzip"
+	"fmt"
+	"io"
+	"os"
 	"time"
 
 	"github.com/rivo/tview"
 
 	"gplcheck/pkg/common"
+	"gplcheck/pkg/worker"
+	"procinspect/pkg/semantic"
 )
 
 type (
@@ -38,23 +44,28 @@ func (t *Tui) Run() {
 	go func() {
 		// delay 1 second
 		time.Sleep(1 * time.Second)
-		data := [][]string{
-			{"1696160426.41959", "warn", "unsupported: update set multiple columns with select", "6771"},
-			{"1696160426.4196968", "warn", "unsupported: update set multiple columns with select", "6771"},
-			{"1696160426.41972", "warn", "unsupported: update set multiple columns with select", "6771"},
-			{"1696160426.419729", "warn", "unsupported: update set multiple columns with select", "6771"},
-			{"1696160426.41959", "warn", "unsupported: update set multiple columns with select", "6771"},
+		f, err := os.Open("./test.ast")
+		if err != nil {
+			return
 		}
-		for _, d := range data {
-			d := common.LogEntry{
-				Time:    time.Now(),
-				Phase:   "check",
-				Message: d[2],
-				Line:    6771,
-			}
-			t.notifier.LogChan() <- d
-			time.Sleep(1 * time.Second)
+		defer f.Close()
+
+		gr, err := gzip.NewReader(f)
+		if err != nil {
+			return
 		}
+		defer gr.Close()
+
+		// read file to string
+		text, err := io.ReadAll(gr)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		// parse file
+		script, err := semantic.NewNodeDecoder[*semantic.Script]().Decode(text)
+		w := worker.NewCheckWorker(t.notifier)
+		w.Run(script)
 	}()
 
 	go func() {
