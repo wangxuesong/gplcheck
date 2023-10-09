@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"strconv"
+	"sync"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
@@ -14,6 +15,7 @@ type ResultViewController struct {
 	tview.TableContentReadOnly
 	notifier *common.Notifier
 
+	lock sync.RWMutex
 	data []common.LogEntry
 }
 
@@ -32,6 +34,7 @@ func NewResultViewController(notifier *common.Notifier) *ResultViewController {
 	c := &ResultViewController{
 		notifier: notifier,
 
+		lock: sync.RWMutex{},
 		data: []common.LogEntry{},
 	}
 	c.run()
@@ -51,6 +54,8 @@ func (c *ResultViewController) GetCell(row, column int) *tview.TableCell {
 }
 
 func (c *ResultViewController) GetRowCount() int {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
 	return len(c.data) + 1
 }
 
@@ -81,7 +86,12 @@ func (c *ResultViewController) loadTestData(row int, column int) (tc *tview.Tabl
 }
 
 func (c *ResultViewController) getData(row int, column int) *tview.TableCell {
-	// value := c.data[row-1][column-1]
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+
+	if row-1 >= len(c.data) {
+		return nil
+	}
 	var value string
 	switch column {
 	case 1:
@@ -111,7 +121,14 @@ func (c *ResultViewController) run() {
 			case cmd := <-c.notifier.LogChan():
 				switch cmd := cmd.(type) {
 				case *common.LogCommand:
+					c.lock.Lock()
 					c.data = append(c.data, cmd.Entry)
+					c.lock.Unlock()
+					c.notifier.RefreshChan() <- true
+				case *common.ClearCommand:
+					c.lock.Lock()
+					c.data = []common.LogEntry{}
+					c.lock.Unlock()
 					c.notifier.RefreshChan() <- true
 				}
 			}

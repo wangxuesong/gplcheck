@@ -12,6 +12,10 @@ type (
 		FilePath string
 	}
 
+	ClearCommand struct {
+		cmd
+	}
+
 	LogCommand struct {
 		cmd
 		Entry LogEntry
