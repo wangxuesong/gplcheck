@@ -16,6 +16,11 @@ type (
 		cmd
 	}
 
+	SourceCommand struct {
+		cmd
+		Source string
+	}
+
 	LogCommand struct {
 		cmd
 		Entry LogEntry

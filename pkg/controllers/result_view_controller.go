@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/gdamore/tcell/v2"
@@ -15,8 +16,11 @@ type ResultViewController struct {
 	tview.TableContentReadOnly
 	notifier *common.Notifier
 
-	lock sync.RWMutex
-	data []common.LogEntry
+	lock   sync.RWMutex
+	data   []common.LogEntry
+	source []string
+
+	clearHandler func()
 }
 
 var (
@@ -105,6 +109,10 @@ func (c *ResultViewController) getData(row int, column int) *tview.TableCell {
 	return tc
 }
 
+func (c *ResultViewController) SetClearHandler(f func()) {
+	c.clearHandler = f
+}
+
 func (c *ResultViewController) run() {
 	go func() {
 		for {
@@ -116,15 +124,39 @@ func (c *ResultViewController) run() {
 				case *common.LogCommand:
 					c.lock.Lock()
 					c.data = append(c.data, cmd.Entry)
+					if cmd.Entry.Line > 0 && cmd.Entry.Line <= len(c.source) {
+						line := c.source[cmd.Entry.Line-1]
+						if strings.Index(line, "[\"") != 0 {
+							c.source[cmd.Entry.Line-1] = fmt.Sprintf(`["%d"]%s[""]`, cmd.Entry.Line, line)
+						}
+					}
 					c.lock.Unlock()
 					c.notifier.RefreshChan() <- true
 				case *common.ClearCommand:
 					c.lock.Lock()
 					c.data = []common.LogEntry{}
+					c.source = []string{}
 					c.lock.Unlock()
+					if c.clearHandler != nil {
+						c.clearHandler()
+					}
 					c.notifier.RefreshChan() <- true
+				case *common.SourceCommand:
+					c.lock.Lock()
+					c.source = strings.Split(cmd.Source, "\n")
+					c.lock.Unlock()
 				}
+
 			}
 		}
 	}()
+}
+
+func (c *ResultViewController) Refresh() {
+	go func() { c.notifier.RefreshChan() <- true }()
+}
+
+func (c *ResultViewController) GetSource(l int) (string, string) {
+	source := c.source
+	return strings.Join(source, "\n"), fmt.Sprintf("%d", c.data[l].Line)
 }

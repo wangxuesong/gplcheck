@@ -62,6 +62,7 @@ func (t *Tui) Run() {
 							return
 						}
 						t.notifier.LogChan() <- &common.ClearCommand{}
+						t.notifier.LogChan() <- &common.SourceCommand{Source: string(text)}
 						// parse file
 						w := worker.NewParseWorker(t.notifier)
 						script, err := w.Run(string(text))
