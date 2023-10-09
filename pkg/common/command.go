@@ -11,6 +11,11 @@ type (
 		cmd
 		FilePath string
 	}
+
+	LogCommand struct {
+		cmd
+		Entry LogEntry
+	}
 )
 
 func (c *cmd) command() {}

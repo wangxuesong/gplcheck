@@ -35,7 +35,7 @@ func (c *CheckWorker) Run(script *semantic.Script) {
 				Message: err.Error(),
 				Line:    err.Line,
 			}
-			c.notifier.LogChan() <- logEntry
+			c.notifier.LogChan() <- &common.LogCommand{Entry: logEntry}
 			time.Sleep(100 * time.Millisecond)
 		}
 	}

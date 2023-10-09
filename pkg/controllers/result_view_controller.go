@@ -108,9 +108,12 @@ func (c *ResultViewController) run() {
 			select {
 			case <-c.notifier.CloseChan():
 				return
-			case log := <-c.notifier.LogChan():
-				c.data = append(c.data, log)
-				c.notifier.RefreshChan() <- true
+			case cmd := <-c.notifier.LogChan():
+				switch cmd := cmd.(type) {
+				case *common.LogCommand:
+					c.data = append(c.data, cmd.Entry)
+					c.notifier.RefreshChan() <- true
+				}
 			}
 		}
 	}()

@@ -3,7 +3,7 @@ package common
 type Notifier struct {
 	refreshChan chan interface{}
 	closeChan   chan interface{}
-	logChan     chan LogEntry
+	logChan     chan Command
 	commandChan chan Command
 }
 
@@ -11,7 +11,7 @@ func NewNotifier() *Notifier {
 	return &Notifier{
 		refreshChan: make(chan interface{}),
 		closeChan:   make(chan interface{}),
-		logChan:     make(chan LogEntry),
+		logChan:     make(chan Command),
 		commandChan: make(chan Command),
 	}
 }
@@ -24,7 +24,7 @@ func (n *Notifier) CloseChan() chan interface{} {
 	return n.closeChan
 }
 
-func (n *Notifier) LogChan() chan LogEntry {
+func (n *Notifier) LogChan() chan Command {
 	return n.logChan
 }
 
