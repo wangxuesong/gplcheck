@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -15,6 +16,8 @@ type (
 	Tui struct {
 		App  *tview.Application
 		Main *MainFrame
+
+		ctx context.Context
 
 		notifier *common.Notifier
 	}
@@ -47,7 +50,16 @@ func (t *Tui) Run() {
 			case cmd := <-t.notifier.CommandChan():
 				switch c := cmd.(type) {
 				case *common.ParseCommand:
+					if t.ctx != nil {
+						return
+					}
+					ctx, cancel := context.WithCancel(context.Background())
+					t.ctx = ctx
 					go func() {
+						defer func() {
+							cancel()
+							t.ctx = nil
+						}()
 						// open file
 						f, err := os.Open(c.FilePath)
 						if err != nil {
