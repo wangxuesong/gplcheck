@@ -30,6 +30,21 @@ type (
 		cmd
 		Status string
 	}
+
+	ProgressStartCommand struct {
+		cmd
+		FileName string
+		Total    int
+	}
+
+	ProgressUpdateCommand struct {
+		cmd
+		Progress int
+	}
+
+	ProgressEndCommand struct {
+		cmd
+	}
 )
 
 func (c *cmd) command() {}

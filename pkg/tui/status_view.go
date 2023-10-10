@@ -14,10 +14,14 @@ type StatusView struct {
 }
 
 func NewStatusView(c *controllers.StatusViewController) *StatusView {
-	return &StatusView{
+	v := &StatusView{
 		TextView:   *tview.NewTextView().SetText("Ready"),
 		controller: c,
 	}
+	v.SetChangedFunc(func() {
+		c.SetWidth(v.GetFieldWidth())
+	})
+	return v
 }
 
 func (v *StatusView) Draw(s tcell.Screen) {
