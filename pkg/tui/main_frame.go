@@ -6,23 +6,18 @@ type MainFrame struct {
 	tview.Flex
 	filePanel   *FileView
 	resultPanel *ResultView
-	status      *tview.TextView
+	status      *StatusView
 }
 
-func NewMainFrame(file *FileView, result *ResultView) *MainFrame {
+func NewMainFrame(file *FileView, result *ResultView, status *StatusView) *MainFrame {
 	m := &MainFrame{
 		Flex:        *tview.NewFlex(),
 		filePanel:   file,
 		resultPanel: result,
+		status:      status,
 	}
-	m.makeUIComponents()
 	m.DefaultLayout()
-	m.loadTestData()
 	return m
-}
-
-func (m *MainFrame) makeUIComponents() {
-	m.status = tview.NewTextView().SetText("Ready")
 }
 
 func (m *MainFrame) DefaultLayout() {
@@ -32,9 +27,4 @@ func (m *MainFrame) DefaultLayout() {
 	m.Flex.Clear().SetDirection(tview.FlexRow).
 		AddItem(main, 0, 1, true).
 		AddItem(m.status, 1, 1, false)
-}
-
-func (m *MainFrame) loadTestData() {
-
-	m.resultPanel.SetTitle("Result")
 }

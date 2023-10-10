@@ -25,6 +25,11 @@ type (
 		cmd
 		Entry LogEntry
 	}
+
+	StatusCommand struct {
+		cmd
+		Status string
+	}
 )
 
 func (c *cmd) command() {}

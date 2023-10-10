@@ -5,6 +5,7 @@ type Notifier struct {
 	closeChan   chan interface{}
 	logChan     chan Command
 	commandChan chan Command
+	statusChan  chan Command
 }
 
 func NewNotifier() *Notifier {
@@ -13,6 +14,7 @@ func NewNotifier() *Notifier {
 		closeChan:   make(chan interface{}),
 		logChan:     make(chan Command),
 		commandChan: make(chan Command),
+		statusChan:  make(chan Command),
 	}
 }
 
@@ -30,4 +32,8 @@ func (n *Notifier) LogChan() chan Command {
 
 func (n *Notifier) CommandChan() chan Command {
 	return n.commandChan
+}
+
+func (n *Notifier) StatusChan() chan Command {
+	return n.statusChan
 }

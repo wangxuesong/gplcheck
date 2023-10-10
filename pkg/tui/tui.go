@@ -59,6 +59,7 @@ func (t *Tui) Run() {
 						defer func() {
 							cancel()
 							t.ctx = nil
+							t.notifier.StatusChan() <- &common.StatusCommand{Status: "Ready"}
 						}()
 						// open file
 						f, err := os.Open(c.FilePath)
@@ -75,6 +76,7 @@ func (t *Tui) Run() {
 						}
 						t.notifier.LogChan() <- &common.ClearCommand{}
 						t.notifier.LogChan() <- &common.SourceCommand{Source: string(text)}
+						t.notifier.StatusChan() <- &common.StatusCommand{Status: fmt.Sprintf("Parse %s", c.FilePath)}
 						// parse file
 						w := worker.NewParseWorker(t.notifier)
 						script, err := w.Run(string(text))
