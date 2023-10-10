@@ -22,6 +22,9 @@ func NewCheckWorker(notifier *common.Notifier) *CheckWorker {
 }
 
 func (c *CheckWorker) Run(script *semantic.Script) {
+	if script == nil {
+		return
+	}
 	v := checker.NewValidVisitor()
 	_ = script.Accept(v)
 
