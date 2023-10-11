@@ -2,10 +2,11 @@ package worker
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"gplcheck/pkg/common"
-	"procinspect/pkg/checker"
+	"gplcheck/pkg/utils"
 	"procinspect/pkg/parser"
 	"procinspect/pkg/semantic"
 )
@@ -19,7 +20,7 @@ func NewParseWorker(notifier *common.Notifier) *ParseWorker {
 }
 
 func (c *ParseWorker) Run(text string) (*semantic.Script, error) {
-	script, err := checker.LoadScript(string(text))
+	script, err := c.parse(text)
 	if err != nil {
 		joinErr, ok := err.(interface{ Unwrap() []error })
 		if ok {
@@ -39,5 +40,15 @@ func (c *ParseWorker) Run(text string) (*semantic.Script, error) {
 		}
 	}
 	return script, err
+}
 
+func (c *ParseWorker) parse(text string) (*semantic.Script, error) {
+	t := len(strings.Split(text, "\n"))
+	c.notifier.StatusChan() <- &common.ProgressUpdateCommand{Progress: 0, Total: t}
+	parser := utils.NewParallelParser(text).
+		WithUpdateHandler(func(delta, total int) {
+			c.notifier.StatusChan() <- &common.ProgressUpdateCommand{Progress: delta, Total: total}
+		})
+
+	return parser.Parse()
 }
