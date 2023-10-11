@@ -70,6 +70,7 @@ func (c *StatusViewController) run() {
 					c.text = strings.TrimSpace(c.buff.String())
 					c.notifier.RefreshChan() <- true
 				case *common.ProgressUpdateCommand:
+					c.progress.Total = cmd.Total
 					c.progress.Add(cmd.Progress)
 					c.text = strings.TrimSpace(c.buff.String())
 					c.notifier.RefreshChan() <- true

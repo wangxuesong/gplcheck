@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
+	"time"
 
 	"github.com/rivo/tview"
 
@@ -59,7 +61,7 @@ func (t *Tui) Run() {
 						defer func() {
 							cancel()
 							t.ctx = nil
-							t.notifier.StatusChan() <- &common.StatusCommand{Status: "Ready"}
+							// t.notifier.StatusChan() <- &common.StatusCommand{Status: "Ready"}
 						}()
 						// open file
 						f, err := os.Open(c.FilePath)
@@ -77,11 +79,17 @@ func (t *Tui) Run() {
 						t.notifier.LogChan() <- &common.ClearCommand{}
 						t.notifier.LogChan() <- &common.SourceCommand{Source: string(text)}
 						t.notifier.StatusChan() <- &common.StatusCommand{Status: fmt.Sprintf("Parse %s", c.FilePath)}
+						time.Sleep(1 * time.Second)
 						// parse file
+						t.notifier.StatusChan() <- &common.ProgressStartCommand{
+							Total:    100,
+							FileName: filepath.Base(c.FilePath),
+						}
 						w := worker.NewParseWorker(t.notifier)
 						script, err := w.Run(string(text))
 						cw := worker.NewCheckWorker(t.notifier)
 						cw.Run(script)
+						t.notifier.StatusChan() <- &common.ProgressEndCommand{}
 					}()
 				}
 			}

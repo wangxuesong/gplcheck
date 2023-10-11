@@ -40,6 +40,7 @@ type (
 	ProgressUpdateCommand struct {
 		cmd
 		Progress int
+		Total    int
 	}
 
 	ProgressEndCommand struct {
