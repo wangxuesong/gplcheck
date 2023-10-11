@@ -87,9 +87,9 @@ func (t *Tui) Run() {
 						}
 						w := worker.NewParseWorker(t.notifier)
 						script, err := w.Run(string(text))
+						t.notifier.StatusChan() <- &common.ProgressEndCommand{}
 						cw := worker.NewCheckWorker(t.notifier)
 						cw.Run(script)
-						t.notifier.StatusChan() <- &common.ProgressEndCommand{}
 					}()
 				}
 			}
