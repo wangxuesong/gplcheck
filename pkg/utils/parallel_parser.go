@@ -107,6 +107,9 @@ func (p *ParallelParser) parseSemantic() (*semantic.Script, error) {
 	script := &semantic.Script{}
 	var ee error
 	for _, result := range p.results {
+		if result.AstFunc == nil {
+			continue
+		}
 		s, err := result.AstFunc(result.Start)
 		if err != nil {
 			joinErr, ok := err.(interface{ Unwrap() []error })
