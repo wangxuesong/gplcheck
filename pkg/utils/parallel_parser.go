@@ -119,9 +119,37 @@ func (p *ParallelParser) parseSemantic() (*semantic.Script, error) {
 				ee = errors.Join(ee, err)
 			}
 		}
+		s = fixLineNumber(s, result.Start)
 		script = appendScript(script, s)
 	}
 	return script, ee
+}
+
+type fixLineVisitor struct {
+	semantic.StubNodeVisitor
+	start int
+}
+
+func (v *fixLineVisitor) VisitChildren(node semantic.AstNode) (err error) {
+	for _, child := range semantic.GetChildren(node) {
+		_ = child.Accept(v)
+	}
+	n := node.(interface {
+		semantic.Node
+		semantic.SetPosition
+	})
+	n.SetLine(n.Line() + v.start)
+	line := n.Line()
+	line = line + 1
+	return
+}
+func fixLineNumber(script *semantic.Script, start int) *semantic.Script {
+	v := &fixLineVisitor{
+		start: start,
+	}
+	v.StubNodeVisitor.NodeVisitor = v
+	script.Accept(v)
+	return script
 }
 func appendScript(script *semantic.Script, s *semantic.Script) *semantic.Script {
 	for _, stmt := range s.Statements {

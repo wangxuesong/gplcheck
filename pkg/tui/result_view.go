@@ -42,7 +42,7 @@ func NewResultView(c *controllers.ResultViewController) *ResultView {
 			v.showSource(true)
 			v.controller.Refresh()
 			v.source.SetText(text)
-			go func() { v.scrollToError(tag) }()
+			v.scrollToError(tag)
 			return nil
 		}
 		return event
