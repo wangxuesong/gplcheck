@@ -6,22 +6,15 @@ import (
 	"runtime"
 	"strings"
 
-	"go.uber.org/zap"
-
 	"procinspect/pkg/parser"
 	"procinspect/pkg/semantic"
 )
 
 type (
-	msg struct {
-		Msg    string
-		Fields []zap.Field
-	}
 	ParseRequest struct {
 		Source string
 		Index  int
 		Start  int
-		Msg    chan msg
 	}
 	ParseResult struct {
 		Index   int

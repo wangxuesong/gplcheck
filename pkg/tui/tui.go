@@ -61,7 +61,6 @@ func (t *Tui) Run() {
 						defer func() {
 							cancel()
 							t.ctx = nil
-							// t.notifier.StatusChan() <- &common.StatusCommand{Status: "Ready"}
 						}()
 						// open file
 						f, err := os.Open(c.FilePath)

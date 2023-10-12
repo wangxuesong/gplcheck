@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"atomicgo.dev/schedule"
+
 	"gplcheck/pkg/common"
 	"gplcheck/pkg/utils"
 	"procinspect/pkg/parser"
@@ -49,6 +51,12 @@ func (c *ParseWorker) parse(text string) (*semantic.Script, error) {
 		WithUpdateHandler(func(delta, total int) {
 			c.notifier.StatusChan() <- &common.ProgressUpdateCommand{Progress: delta, Total: total}
 		})
+
+	task := schedule.Every(1*time.Second, func() bool {
+		c.notifier.StatusChan() <- &common.ProgressUpdateCommand{Progress: 0, Total: t}
+		return true
+	})
+	defer task.Stop()
 
 	return parser.Parse()
 }
