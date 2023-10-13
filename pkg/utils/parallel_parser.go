@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
@@ -126,24 +127,32 @@ type fixLineVisitor struct {
 	start int
 }
 
+func newFixLineVisitor(start int) *fixLineVisitor {
+	v := &fixLineVisitor{start: start}
+	v.StubNodeVisitor.NodeVisitor = v
+	return v
+}
+
 func (v *fixLineVisitor) VisitChildren(node semantic.AstNode) (err error) {
+	if node == nil || reflect.ValueOf(node).IsNil() {
+		node = nil
+		return
+	}
 	for _, child := range semantic.GetChildren(node) {
 		_ = child.Accept(v)
 	}
-	n := node.(interface {
+	if n, ok := node.(interface {
 		semantic.Node
 		semantic.SetPosition
-	})
-	n.SetLine(n.Line() + v.start)
-	line := n.Line()
-	line = line + 1
+	}); ok {
+		if n != nil {
+			n.SetLine(n.Line() + v.start)
+		}
+	}
 	return
 }
 func fixLineNumber(script *semantic.Script, start int) *semantic.Script {
-	v := &fixLineVisitor{
-		start: start,
-	}
-	v.StubNodeVisitor.NodeVisitor = v
+	v := newFixLineVisitor(start)
 	script.Accept(v)
 	return script
 }
