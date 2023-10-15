@@ -22,13 +22,15 @@ type (
 		ctx context.Context
 
 		notifier *common.Notifier
+		pages    *tview.Pages
 	}
 )
 
 func NewTui(main *MainFrame, notifier *common.Notifier) *Tui {
 	return &Tui{
-		App:  tview.NewApplication().EnableMouse(true),
-		Main: main,
+		App:   tview.NewApplication().EnableMouse(true),
+		Main:  main,
+		pages: tview.NewPages(),
 
 		notifier: notifier,
 	}
@@ -99,6 +101,30 @@ func (t *Tui) Run() {
 }
 
 func (t *Tui) prepareViews() error {
-	t.App.SetRoot(t.Main, true)
+	modal := func(p tview.Primitive, width, height int) tview.Primitive {
+		flex := tview.NewFlex()
+		return flex.
+			AddItem(nil, 0, 1, false).
+			AddItem(tview.NewFlex().SetDirection(tview.FlexRow).
+				AddItem(nil, 0, 1, false).
+				AddItem(p, 0, 1, true).
+				AddItem(nil, 0, 1, false), width, 1, true).
+			AddItem(nil, 0, 1, false)
+	}
+
+	t.pages.AddPage("main", t.Main, true, true)
+
+	// show splash screen
+	view := NewSplashScreen(t.App)
+	t.pages.AddPage("splash", modal(view, view.Width(), view.Height()), true, true)
+
+	// close splash screen
+	go func() {
+		time.Sleep(5 * time.Second)
+		t.pages.RemovePage("splash")
+		t.App.Draw()
+	}()
+
+	t.App.SetRoot(t.pages, true)
 	return nil
 }
