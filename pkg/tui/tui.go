@@ -26,14 +26,18 @@ type (
 	}
 )
 
-func NewTui(main *MainFrame, notifier *common.Notifier) *Tui {
+func NewTui(app *tview.Application, main *MainFrame, notifier *common.Notifier) *Tui {
 	return &Tui{
-		App:   tview.NewApplication().EnableMouse(true),
+		App:   app,
 		Main:  main,
 		pages: tview.NewPages(),
 
 		notifier: notifier,
 	}
+}
+
+func InitApp() *tview.Application {
+	return tview.NewApplication().EnableMouse(true)
 }
 
 func (t *Tui) Run() {

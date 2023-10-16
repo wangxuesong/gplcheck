@@ -17,6 +17,7 @@ func main() {
 	di := fx.New(
 		fx.Provide(app.NewApp,
 			tui.NewTui,
+			tui.InitApp,
 			tui.NewMainFrame,
 			tui.NewFileView,
 			func() string { return "." },
