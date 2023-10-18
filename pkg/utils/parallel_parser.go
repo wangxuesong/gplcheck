@@ -51,11 +51,16 @@ func (p *ParallelParser) Parse() (*semantic.Script, error) {
 	p.results = make([]*ParseResult, len(p.requests))
 	p.parseSyntax()
 
+	if err := p.processSyntaxError(); err != nil {
+		return nil, err
+	}
+
 	return p.parseSemantic()
 }
 
 func (p *ParallelParser) parseSyntax() {
 	numWorkers := runtime.GOMAXPROCS(0) - 1
+	// TODO: clean work pool
 	pool := NewWorkerPool(numWorkers, len(p.requests))
 	parseChan := make(chan *ParseResult)
 	for _, req := range p.requests {
@@ -120,6 +125,24 @@ func (p *ParallelParser) parseSemantic() (*semantic.Script, error) {
 		script = appendScript(script, s)
 	}
 	return script, ee
+}
+
+func (p *ParallelParser) processSyntaxError() error {
+	var err error
+	for _, result := range p.results {
+		if result.Error != nil {
+			joinErr, ok := result.Error.(interface{ Unwrap() []error })
+			if ok {
+				errs := joinErr.Unwrap()
+				for _, e := range errs {
+					err = errors.Join(err, e)
+				}
+			} else {
+				err = errors.Join(err, result.Error)
+			}
+		}
+	}
+	return err
 }
 
 type fixLineVisitor struct {

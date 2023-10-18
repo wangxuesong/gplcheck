@@ -32,7 +32,7 @@ func (c *ParseWorker) Run(text string) (*semantic.Script, error) {
 				if errors.As(e, &pe) {
 					logEntry := common.LogEntry{
 						Time:    time.Now(),
-						Phase:   "semantic",
+						Phase:   pe.Kind.String(),
 						Message: pe.Msg,
 						Line:    pe.Line,
 					}
