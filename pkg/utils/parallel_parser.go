@@ -104,7 +104,7 @@ func (p *ParallelParser) prepareRequest() {
 
 func (p *ParallelParser) parseSemantic() (*semantic.Script, error) {
 	script := &semantic.Script{}
-	var ee error
+	var ee []error
 	for _, result := range p.results {
 		if result.AstFunc == nil {
 			continue
@@ -115,16 +115,16 @@ func (p *ParallelParser) parseSemantic() (*semantic.Script, error) {
 			if ok {
 				errs := joinErr.Unwrap()
 				for _, e := range errs {
-					ee = errors.Join(ee, e)
+					ee = append(ee, e)
 				}
 			} else {
-				ee = errors.Join(ee, err)
+				ee = append(ee, err)
 			}
 		}
 		s = fixLineNumber(s, result.Start)
 		script = appendScript(script, s)
 	}
-	return script, ee
+	return script, errors.Join(ee...)
 }
 
 func (p *ParallelParser) processSyntaxError() error {
