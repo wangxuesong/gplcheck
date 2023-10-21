@@ -21,11 +21,25 @@ func NewCheckWorker(notifier *common.Notifier) *CheckWorker {
 	}
 }
 
+func registerRules(v *checker.ValidVisitor) {
+	rules := []checker.Rule{
+		{
+			Name:      "create synonym",
+			Target:    &semantic.CreateSynonymStatement{},
+			CheckFunc: checker.ValidExprFunc("true"),
+			Message:   "unsupported: create synonym",
+		},
+	}
+
+	v.RegisterValidateRules(rules)
+}
+
 func (c *CheckWorker) Run(script *semantic.Script) {
 	if script == nil {
 		return
 	}
 	v := checker.NewValidVisitor()
+	registerRules(v)
 	_ = script.Accept(v)
 
 	var errs *multierror.Error
